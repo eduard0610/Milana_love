@@ -131,7 +131,7 @@
   .stat-num { font-size:22px; font-weight:800; color: var(--orange-light); }
   .stat-lbl { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; opacity:0.55; margin-top:2px; }
 
-  /* СТИЛЬ ДЛЯ БЛОКА С ПОЖЕЛАНИЕМ */
+  /* БЛОК С ПОЖЕЛАНИЕМ */
   .final-wish {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,209,102,0.2);
@@ -147,13 +147,27 @@
   }
   .final-wish strong { color: var(--gold); display: block; margin-bottom: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; }
 
+  /* ЖЕСТКИЕ РАЗМЕРЫ ДЛЯ ФОТО (чтобы не сжималось) */
   .photo-frame {
-    width: min(260px, 70vw); aspect-ratio: 1; border-radius: 20px; overflow:hidden;
-    margin-bottom: 24px; border: 3px solid rgba(255,255,255,0.1);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4); background:#1f1f3a;
-    display:flex; align-items:center; justify-content:center;
+    width: 220px; 
+    height: 220px; 
+    border-radius: 20px; 
+    overflow: hidden;
+    margin-bottom: 24px; 
+    border: 3px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
+    background: #1f1f3a;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    flex-shrink: 0;
   }
-  .photo-frame img { width:100%; height:100%; object-fit: cover; display:block; }
+  .photo-frame img { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    display: block; 
+  }
 
   /* GIFT */
   #gift-screen { background: radial-gradient(circle at 50% 40%, #2a2a4d 0%, #16162b 70%); }
@@ -229,7 +243,7 @@
 
   @media (max-height: 750px) {
     .final-title { font-size: 26px; } .final-emoji { font-size: 44px; }
-    .stat { padding: 8px 14px; } .photo-frame { width: 200px; }
+    .stat { padding: 8px 14px; } .photo-frame { width: 160px; height: 160px; }
     .final-wish { font-size: 14px; padding: 16px; }
   }
 </style>
@@ -286,15 +300,13 @@
       <div class="stat"><div class="stat-num">∞</div><div class="stat-lbl">Любви</div></div>
     </div>
 
-    <!-- БЛОК С ТВОИМ ПОЖЕЛАНИЕМ -->
     <div class="final-wish">
       <strong>Мои пожелания:</strong>
       20 лет — это только начало. Желаю тебе всегда попадать в цель, будь то на площадке или в жизни, исполнения самых смелых желаний, лёгких дней и чтобы улыбка никогда не сходила с твоего лица. Пусть каждый день приносит радость, яркие эмоции и победы. Будь самой счастливой. Я всегда рядом, чтобы поддерживать тебя. Люблю!
     </div>
 
     <div class="photo-frame" id="photo-frame">
-      <img src="photo.jpg" alt="Милана"
-        onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=&quot;padding:20px;text-align:center;font-size:12px;opacity:.5&quot;>Замени photo.jpg<br>на фотографию Миланы</span>';">
+      <img src="photo.jpg" alt="Милана" onerror="this.style.display='none'; this.parentNode.innerHTML='<span style=&quot;padding:20px;text-align:center;font-size:12px;opacity:.5&quot;>Фото не загрузилось.<br>Проверь файл photo.jpg</span>';">
     </div>
     
     <button class="btn primary" id="gift-btn">🎁 Где подарок?</button>
@@ -382,7 +394,6 @@ let particles = [];
 let confetti = [], confActive = false;
 let shotsFired = 0;
 
-// ПЕРЕМЕННЫЕ ДЛЯ СЕРДЕЧКА
 let drawingHeart = false;
 let heartProgress = 0;
 let heartStartTime = 0;
@@ -711,7 +722,7 @@ function showGift() {
 
   const pol = $('polaroid');
   pol.classList.remove('show');
-  void pol.offsetWidth;          // перезапуск анимации
+  void pol.offsetWidth;
   setTimeout(() => pol.classList.add('show'), 250);
 }
 
@@ -770,6 +781,20 @@ function getAudio() {
   }
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
+}
+
+function unlockAudio() {
+  const ac = getAudio();
+  if (ac && ac.state === 'suspended') {
+    ac.resume();
+  }
+  if (ac) {
+    const buffer = ac.createBuffer(1, 1, 22050);
+    const source = ac.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ac.destination);
+    source.start(0);
+  }
 }
 
 function playCelebration() {
@@ -843,7 +868,7 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('gesturestart', e => e.preventDefault());
 
 $('start-btn').addEventListener('click', () => {
-  getAudio();
+  unlockAudio();
   
   score = 0;
   shotsFired = 0;
@@ -866,6 +891,8 @@ $('start-btn').addEventListener('click', () => {
 });
 
 msgNext.addEventListener('click', () => {
+  unlockAudio();
+  
   const wasLast = score >= MESSAGES.length;
   hideMessage();
   if (wasLast) showFinal();
